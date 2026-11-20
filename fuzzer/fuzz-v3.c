@@ -3,9 +3,10 @@
  *
  *   clang -std=c11 -g -O1 -fsanitize=address,undefined,fuzzer -I.. \
  *     fuzz-v3.c ../tinydng_api.c ../tinydng_io.c ../tinydng_tiff.c \
- *     ../tinydng_dng.c ../tinydng_codec.c ../tinydng_write.c \
- *     ../tinydng_psd.c ../tinydng_psd_write.c ../tinydng_miniz.c \
- *     ../tinydng_stb_image.c ../tiny_dng_ljpeg92_v2.c -o fuzz-v3
+ *     ../tinydng_dng.c ../tinydng_codec.c ../tinydng_preview.c \
+ *     ../tinydng_write.c ../tinydng_psd.c ../tinydng_psd_write.c \
+ *     ../tinydng_miniz.c ../tinydng_stb_image.c ../tiny_dng_ljpeg92_v2.c \
+ *     -o fuzz-v3
  */
 #include "../tinydng.h"
 
@@ -69,6 +70,28 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
                                     &derr) == TINYDNG_OK) {
             tinydng_pixels_free(ctx, &px);
           }
+        }
+      }
+      /* Linear preview in both modes/depths. Bad metadata (inverted levels,
+         unusable CFA, float samples) must surface a clean status, never crash. */
+      {
+        tinydng_preview_options popts;
+        tinydng_pixels pv;
+        memset(&popts, 0, sizeof(popts));
+        popts.mode = TINYDNG_PREVIEW_GRAY;
+        popts.output_bps = (i & 1u) ? TINYDNG_PREVIEW_16
+                                    : TINYDNG_PREVIEW_8;
+        if (tinydng_preview_linear(ctx, doc, i, &popts, &pv, &derr) ==
+            TINYDNG_OK) {
+          tinydng_pixels_free(ctx, &pv);
+        }
+        memset(&popts, 0, sizeof(popts));
+        popts.mode = TINYDNG_PREVIEW_RGB;
+        popts.output_bps = (i & 1u) ? TINYDNG_PREVIEW_8
+                                    : TINYDNG_PREVIEW_16;
+        if (tinydng_preview_linear(ctx, doc, i, &popts, &pv, &derr) ==
+            TINYDNG_OK) {
+          tinydng_pixels_free(ctx, &pv);
         }
       }
     }

@@ -21,6 +21,7 @@ set(TINYDNG_WEB_SOURCES
   "${TINYDNG_ROOT}/tinydng_tiff.c"
   "${TINYDNG_ROOT}/tinydng_dng.c"
   "${TINYDNG_ROOT}/tinydng_codec.c"
+  "${TINYDNG_ROOT}/tinydng_preview.c"
   "${TINYDNG_ROOT}/tinydng_miniz.c"
   "${TINYDNG_ROOT}/tinydng_stb_image.c"
   "${TINYDNG_ROOT}/tiny_dng_ljpeg92_v2.c")

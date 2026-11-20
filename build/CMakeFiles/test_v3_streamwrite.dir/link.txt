@@ -1,0 +1,1 @@
+/usr/bin/cc -g -Wl,--dependency-file=CMakeFiles/test_v3_streamwrite.dir/link.d CMakeFiles/test_v3_streamwrite.dir/tests/v3_test/test_v3_streamwrite.c.o -o test_v3_streamwrite  libtinydng.a

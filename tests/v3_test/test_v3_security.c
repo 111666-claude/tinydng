@@ -914,6 +914,49 @@ static void fa_storm_read(const char* label, const uint8_t* data, size_t size,
   }
 }
 
+/* Allocation-failure storm over the linear-preview path (CFA image): the
+   preview's own output and normalization allocations sit on top of the
+   normal decode allocations, and every failure ordinal must return a clean
+   status with zero tracked memory left behind. */
+static void fa_storm_preview(const uint8_t* data, size_t size,
+                             size_t max_ord) {
+  size_t k;
+  for (k = 0; k <= max_ord; k++) {
+    fa_state fa;
+    tinydng_config cfg;
+    tinydng_context* ctx;
+    tinydng_document* doc = NULL;
+    tinydng_error err;
+    tinydng_pixels px;
+    tinydng_preview_options po;
+    size_t used_after;
+    memset(&fa, 0, sizeof(fa));
+    fa.base.alloc = fa_alloc;
+    fa.base.free = fa_free;
+    fa.base.user_data = &fa;
+    fa.countdown = k;
+    memset(&cfg, 0, sizeof(cfg));
+    cfg.allocator = fa.base;
+    ctx = tinydng_context_create(&cfg, &err);
+    if (!ctx) {
+      continue;
+    }
+    if (tinydng_open_memory(ctx, data, size, NULL, &doc, &err) == TINYDNG_OK) {
+      memset(&po, 0, sizeof(po));
+      po.mode = TINYDNG_PREVIEW_RGB; /* allocates norm temp + RGB output */
+      po.output_bps = TINYDNG_PREVIEW_16;
+      if (tinydng_preview_linear(ctx, doc, 0, &po, &px, &err) == TINYDNG_OK) {
+        tinydng_pixels_free(ctx, &px);
+      }
+      tinydng_document_destroy(ctx, doc);
+    }
+    used_after = tinydng_context_memory_used(ctx);
+    CHECK(used_after == 0u, "Q(preview): leak %zu bytes at alloc-ordinal %zu",
+          used_after, k);
+    tinydng_context_destroy(ctx);
+  }
+}
+
 static void case_alloc_failure_injection(void) {
   /* Reference inputs built with the default allocator: one uncompressed and
    * one LZW DNG (16x16 gradient, 8-bit). The LZW variant also exercises the
@@ -963,6 +1006,59 @@ static void case_alloc_failure_injection(void) {
   if (lzw_dng) {
     fa_storm_read("lzw", lzw_dng, lzw_sz, 160);
     tinydng_buffer_free(ref_ctx, lzw_dng);
+  }
+
+  /* Preview-path storm over a small CFA DNG (gray + RGB allocations). */
+  {
+    uint16_t cfa_pix[16 * 16];
+    tinydng_write_image cimg;
+    tinydng_write_options copts;
+    tinydng_cfa cfa;
+    tinydng_raw_info raw;
+    uint8_t *cfa_dng = NULL;
+    size_t cfa_sz = 0;
+    for (i = 0; i < W * H; i++) {
+      cfa_pix[i] = (uint16_t)(i * 37u + 64u);
+    }
+    memset(&cfa, 0, sizeof(cfa));
+    cfa.present = 1;
+    cfa.pattern_dim[0] = 2;
+    cfa.pattern_dim[1] = 2;
+    cfa.pattern[0] = 0;
+    cfa.pattern[1] = 1;
+    cfa.pattern[2] = 1;
+    cfa.pattern[3] = 2;
+    cfa.pattern_size = 4;
+    cfa.plane_color[0] = 0;
+    cfa.plane_color[1] = 1;
+    cfa.plane_color[2] = 2;
+    cfa.plane_color_count = 3;
+    memset(&raw, 0, sizeof(raw));
+    raw.black_level_present = 1;
+    raw.black_level_count = 1;
+    raw.black_level[0] = 64;
+    raw.white_level_present = 1;
+    raw.white_level_count = 1;
+    raw.white_level[0] = 1023;
+    memset(&cimg, 0, sizeof(cimg));
+    cimg.width = W;
+    cimg.height = H;
+    cimg.samples_per_pixel = 1;
+    cimg.bits_per_sample = 16;
+    cimg.sample_format = TINYDNG_SAMPLEFORMAT_UINT;
+    cimg.data = (const uint8_t *)cfa_pix;
+    cimg.data_size = sizeof(cfa_pix);
+    cimg.cfa = &cfa;
+    cimg.raw = &raw;
+    memset(&copts, 0, sizeof(copts));
+    copts.as_dng = 1;
+    if (tinydng_write_memory(ref_ctx, &cimg, &copts, &cfa_dng, &cfa_sz,
+                             &err) == TINYDNG_OK) {
+      fa_storm_preview(cfa_dng, cfa_sz, 160);
+      tinydng_buffer_free(ref_ctx, cfa_dng);
+    } else {
+      CHECK(0, "Q: building CFA preview fixture failed: %s", err.message);
+    }
   }
 
   /* Write-path storm: fail each allocation ordinal inside write_memory. */

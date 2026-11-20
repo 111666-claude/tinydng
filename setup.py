@@ -22,6 +22,7 @@ ext_modules = [
             "tinydng_tiff.c",
             "tinydng_dng.c",
             "tinydng_codec.c",
+            "tinydng_preview.c",
             "tinydng_write.c",
             "tinydng_psd.c",
             "tinydng_psd_write.c",

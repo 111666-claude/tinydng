@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/real666/feedback/uid536/build-asan/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

@@ -5,7 +5,7 @@
 ```bash
 cd build && cmake .. && make -j4
 ./test_dng_v3 <file.dng>           # V3 loader (pure C11, all features)
-ctest                              # All v3 tests (8 tests)
+ctest                              # All v3 tests (9 tests)
 ```
 
 ## Key Files
@@ -16,6 +16,7 @@ ctest                              # All v3 tests (8 tests)
 - `tinydng_tiff.c` - TIFF/IFD parser
 - `tinydng_dng.c` - DNG metadata tag handler
 - `tinydng_codec.c` - Block decoder dispatch (LJPEG, ZIP, LZW, PackBits, baseline JPEG)
+- `tinydng_preview.c` - Linear preview: black/white + linearization normalization, grayscale and bilinear CFA demosaic
 - `tinydng_write.c` - TIFF/DNG writer (single-strip + streaming tiled)
 - `tinydng_psd.c` - PSD/PSB reader
 - `tinydng_psd_write.c` - PSD/PSB writer
@@ -92,14 +93,22 @@ SubIFDs are only processed when `TINYDNG_OPEN_PARSE_SUBIFDS` flag is set. Withou
 - PSD duplicate layer channel ids are deduped at decode task-build time so threaded decodes never race on one output slot.
 - PSD layers may declare huge rects with little channel data (uniform-color/adjustment layers are legal). Channel planes report their filled prefix; scatter onto pre-zeroed destinations is bounded by that prefix, so decode cost tracks stored bytes, not declared pixels.
 - LJPEG writer row predictors index the previous row with a SIGNED offset (`rp[-(ptrdiff_t)W]`). An unsigned negated index (`rp[-(size_t)W]`) wraps in size_t and trips UBSan pointer-overflow even when the final address is in-bounds (regression: fuzz-v3-write crash, hardening round 4).
-- Allocation-failure injection (fixture Q): an allocator that fails after N allocations is swept over every ordinal for open+decode (uncompressed + LZW fixtures built by the writer) and write_memory. Every td_ctx_alloc call site must fail with a clean status and leave `tinydng_context_memory_used() == 0`. Keep this property when adding allocation sites.
-- The fuzz-v3 harness exercises `tinydng_decode_segment` and `tinydng_decode_region` (in-bounds pseudo-random windows derived from decoded pixels), not just full-image decode — keep region/segment paths in harness coverage when adding new decode features.
+- Allocation-failure injection (fixture Q): an allocator that fails after N allocations is swept over every ordinal for open+decode (uncompressed + LZW fixtures built by the writer), preview (`fa_storm_preview` over a CFA DNG, gray+RGB allocations) and write_memory. Every td_ctx_alloc call site must fail with a clean status and leave `tinydng_context_memory_used() == 0`. Keep this property when adding allocation sites.
+- The fuzz-v3 harness exercises `tinydng_decode_segment` and `tinydng_decode_region` (in-bounds pseudo-random windows derived from decoded pixels), not just full-image decode — keep region/segment paths in harness coverage when adding new decode features. It also runs `tinydng_preview_linear` in both GRAY/RGB modes on every opened image; malformed preview metadata must always return a clean status.
 
 ### V3 Decode
 - `tinydng_decode_image(ctx, doc, idx, opts, pixels, err)` - decode full image
 - `tinydng_decode_region(ctx, doc, idx, x, y, w, h, opts, pixels, err)` - decode sub-region
 - `tinydng_decode_segment(ctx, doc, idx, seg_idx, opts, pixels, err)` - decode single segment
 - Multi-threaded decode via `opts->num_threads` (POSIX/Win32 threads)
+
+### V3 Linear Preview (tinydng_preview.c)
+- `tinydng_preview_linear(ctx, doc, idx, opts, out, err)` is a pure post-processing layer on top of the unchanged raw decode: it calls `tinydng_decode_image` internally, so the raw sample path and `tinydng_decode_*` APIs are untouched. Output keeps the full raw window size (width/height preserved).
+- Normalization per sample (integer, saturated): optional LinearizationTable (index clamped to last entry), then `clamp(s - black, 0, white-black) * maxcode / (white-black)` with maxcode 255 (8-bit) or 65535 (16-bit).
+- Levels: missing BlackLevel defaults to 0; missing WhiteLevel defaults to `2^bps - 1`. A 1-element level is broadcast to all planes; 4 elements use the DNG 2x2 per-quadrant order (`((y&1)<<1)|(x&1)`). `white <= black` (inverted/degenerate) returns E_INVALID_ARG.
+- Modes: GRAY (mosaic normalized plane for CFA mono; channel average for native multi-sample) and RGB (bilinear Bayer demosaic on CFA; per-channel normalization on native 3-sample). Demosaic averages already-normalized same-plane samples in a clipped 3x3 window so border pixels reuse in-range neighbors.
+- RGB CFA validation rejects: missing CFA on mono, non-2x2 repeat dims, pattern plane index >= plane count, CFALayout 2 (rectangular, E_UNSUPPORTED). Native spp>3 RGB is E_UNSUPPORTED. Float/signed sample formats and stored depth outside 1..32 are E_UNSUPPORTED. Output size is overflow-checked and bounded by `ctx->max_image_pixels` (E_BOUNDS).
+- Writer now emits LinearizationTable (tag 50712, SHORT) and, for CFA images, 4 BlackLevel values when `raw.black_level_count == 4`.
 
 ### V3 Codec Performance Notes (tinydng_codec.c)
 - LZW decoder (`td_lzw_decode`): stops as soon as the output byte count is satisfied (libtiff-compatible). Real-world encoders (Photoshop, NASA PDS) may omit EOI and pad trailing bits with garbage; consuming codes past the expected size failed otherwise-valid files (regression fixture P in test_v3_security.c). Emission writes the prefix-chain directly through a descending cursor instead of a push/pop stack; bit refill bulk-loads up to 5 bytes. Differential-tested against the old implementation on encoder-generated and random streams.

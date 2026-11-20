@@ -1,0 +1,1 @@
+/usr/bin/cc -g -Wl,--dependency-file=CMakeFiles/test_lj92.dir/link.d CMakeFiles/test_lj92.dir/tests/v3_test/test_lj92.c.o -o test_lj92  libtinydng.a

@@ -5,7 +5,7 @@ CFLAGS ?= -std=c11 -g -O1 -fsanitize=address,undefined,fuzzer \
           -fno-sanitize-recover=all -I..
 
 V3_SRCS = ../tinydng_api.c ../tinydng_io.c ../tinydng_tiff.c ../tinydng_dng.c \
-          ../tinydng_codec.c ../tinydng_write.c ../tinydng_miniz.c \
+          ../tinydng_codec.c ../tinydng_preview.c ../tinydng_write.c ../tinydng_miniz.c \
           ../tinydng_stb_image.c ../tiny_dng_ljpeg92_v2.c
 PSD_SRCS = ../tinydng_psd.c ../tinydng_psd_write.c
 

@@ -1,0 +1,2 @@
+/usr/bin/ar qc libtinydng.a CMakeFiles/tinydng.dir/tinydng_api.c.o CMakeFiles/tinydng.dir/tinydng_io.c.o CMakeFiles/tinydng.dir/tinydng_tiff.c.o CMakeFiles/tinydng.dir/tinydng_dng.c.o CMakeFiles/tinydng.dir/tinydng_codec.c.o CMakeFiles/tinydng.dir/tinydng_preview.c.o CMakeFiles/tinydng.dir/tinydng_write.c.o CMakeFiles/tinydng.dir/tinydng_psd.c.o CMakeFiles/tinydng.dir/tinydng_psd_write.c.o CMakeFiles/tinydng.dir/tinydng_miniz.c.o CMakeFiles/tinydng.dir/tinydng_stb_image.c.o CMakeFiles/tinydng.dir/tiny_dng_ljpeg92_v2.c.o
+/usr/bin/ranlib libtinydng.a

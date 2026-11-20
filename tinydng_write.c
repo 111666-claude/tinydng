@@ -1473,7 +1473,14 @@ tinydng_status tinydng_writer_create(tinydng_context *ctx,
       }
       if (raw->black_level_present) {
         uint32_t bl[4];
-        uint32_t k, n = (cfa && cfa->pattern_size) ? 1u : spp;
+        /* CFA images: emit 4 per-quadrant levels when the caller supplied
+           exactly four, otherwise the single level. Non-CFA: one per sample. */
+        uint32_t k, n;
+        if (cfa && cfa->pattern_size) {
+          n = (raw->black_level_count == 4u) ? 4u : 1u;
+        } else {
+          n = spp;
+        }
         if (n > 4u) {
           n = 4u;
         }
@@ -1486,6 +1493,36 @@ tinydng_status tinydng_writer_create(tinydng_context *ctx,
         uint32_t wl = (uint32_t)(raw->white_level[0] < 0 ? 0
                                                          : raw->white_level[0]);
         td_add_long(&w->w, TD_TAG_WHITE_LEVEL, wl);
+      }
+      if (raw->linearization_table && raw->linearization_table_count > 0u) {
+        /* DNG LinearizationTable is SHORT (type 3). Large tables are staged
+           through the extras area via td_add; the stack path stays small. */
+        size_t n = raw->linearization_table_count;
+        uint8_t tmp[64];
+        uint8_t *big = NULL;
+        uint8_t *vbytes;
+        size_t vlen = n * 2u;
+        size_t i;
+        if (vlen / 2u != n) {
+          w->w.failed = 1;
+        } else {
+          if (vlen <= sizeof(tmp)) {
+            vbytes = tmp;
+          } else {
+            big = (uint8_t *)td_ctx_alloc(ctx, vlen, err);
+            if (!big) {
+              return TINYDNG_E_OOM;
+            }
+            vbytes = big;
+          }
+          for (i = 0; i < n; i++) {
+            td_put16(vbytes + i * 2u, raw->linearization_table[i],
+                     w->big_endian);
+          }
+          td_add(&w->w, TD_TAG_LINEARIZATION_TABLE, TD_TYPE_SHORT,
+                 (uint64_t)n, vbytes, vlen);
+          td_ctx_free(ctx, big);
+        }
       }
       if (raw->color_matrix_present) {
         td_add_srationals(&w->w, TD_TAG_COLOR_MATRIX1, raw->color_matrix1, 9);

@@ -1,0 +1,199 @@
+Start testing: Nov 21 04:18 CST
+----------------------------------------------------------
+1/9 Testing: v3_roundtrip
+1/9 Test: v3_roundtrip
+Command: "/home/real666/feedback/uid536/build-asan/test_v3_roundtrip"
+Directory: /home/real666/feedback/uid536/build-asan
+"v3_roundtrip" start time: Nov 21 04:18 CST
+Output:
+----------------------------------------------------------
+== writer/reader round-trips ==
+  none mono16 LE         100x70 spp=1 bps=16 LE -> MATCH
+  none mono16 BE         100x70 spp=1 bps=16 BE -> MATCH
+  none rgb8 LE           50x20 spp=3 bps=8 LE -> MATCH
+  none rgb8 BE           50x20 spp=3 bps=8 BE -> MATCH
+  lzw mono16             200x150 spp=1 bps=16 LE -> MATCH
+  lzw rgb8 BE            123x77 spp=3 bps=8 BE -> MATCH
+  ljpeg mono16           256x192 spp=1 bps=16 LE -> MATCH
+  ljpeg rgb16            100x80 spp=3 bps=16 LE -> MATCH
+  ljpeg SOF11 mono16     96x65 spp=1 bps=16 LE -> MATCH
+  ljpeg SOF11 rgb16      64x49 spp=3 bps=16 LE -> MATCH
+== DNG metadata ==
+  DNG metadata + LZW round-trip checked
+== region/segment ==
+  decode_region(13,9,40x33) matches full image
+== BigTIFF roundtrips ==
+  bigtiff none mono8     header=BigTIFF OK
+  bigtiff none mono8     64x48 spp=1 bps=8 BigTIFF -> MATCH
+  bigtiff none rgb16     header=BigTIFF OK
+  bigtiff none rgb16     100x80 spp=3 bps=16 BigTIFF -> MATCH
+  bigtiff lzw mono16     header=BigTIFF OK
+  bigtiff lzw mono16     200x150 spp=1 bps=16 BigTIFF -> MATCH
+  bigtiff ljpeg mono16   header=BigTIFF OK
+  bigtiff ljpeg mono16   256x192 spp=1 bps=16 BigTIFF -> MATCH
+memory leak check: used=0
+ROUNDTRIP: ALL PASS
+<end of output>
+Test time =   0.06 sec
+----------------------------------------------------------
+Test Passed.
+"v3_roundtrip" end time: Nov 21 04:18 CST
+"v3_roundtrip" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/9 Testing: v3_decode
+2/9 Test: v3_decode
+Command: "/home/real666/feedback/uid536/build-asan/test_v3_decode" "/home/real666/feedback/uid536/tests/v3_test/../.."
+Directory: /home/real666/feedback/uid536/build-asan
+"v3_decode" start time: Nov 21 04:18 CST
+Output:
+----------------------------------------------------------
+== decode tests ==
+  BigTIFF (v43, LONG8) 40x30 decoded OK
+  BigTIFF BE (v43, LONG8) 32x24 decoded OK
+  BigTIFF tiled 48x40 (16x8 tiles, 15 total) decoded OK
+  BigTIFF LONG-offsets 20x16 decoded OK
+  BigTIFF predictor 2 40x20 decoded OK
+  BigTIFF SubIFDs 24x18 decoded OK
+  predictor 2 (horizontal 16-bit) OK
+  predictor 3 (float 32-bit) OK
+  packed 12-bit (37x9) OK
+  keep-packed (37x9) OK
+  keep-packed region (10x4 @ 3,2) OK
+  lj92 skipLength rejection + round-trip OK
+== cross-encoder codec fixtures ==
+  lzw_rgb8.tiff          matches uncompressed baseline
+  deflate_rgb8.tiff      matches uncompressed baseline
+  packbits_rgb8.tiff     matches uncompressed baseline
+  planar_lzw_rgb8.tiff   matches uncompressed baseline
+DECODE: ALL PASS
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"v3_decode" end time: Nov 21 04:18 CST
+"v3_decode" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/9 Testing: v3_metadata
+3/9 Test: v3_metadata
+Command: "/home/real666/feedback/uid536/build-asan/test_v3_metadata" "/home/real666/feedback/uid536/tests/v3_test/../.."
+Directory: /home/real666/feedback/uid536/build-asan
+"v3_metadata" start time: Nov 21 04:18 CST
+Output:
+----------------------------------------------------------
+== metadata: colorchart.dng ==
+  colorchart.dng metadata OK (1888x1182, 14-bit, CFA, matrices)
+== metadata: opcode list ==
+  in-memory OpcodeList: gainmap + warp + vignette parsed OK
+METADATA: ALL PASS
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"v3_metadata" end time: Nov 21 04:18 CST
+"v3_metadata" time elapsed: 00:00:00
+----------------------------------------------------------
+
+4/9 Testing: v3_security
+4/9 Test: v3_security
+Command: "/home/real666/feedback/uid536/build-asan/test_v3_security"
+Directory: /home/real666/feedback/uid536/build-asan
+"v3_security" start time: Nov 21 04:18 CST
+Output:
+----------------------------------------------------------
+== v3 security regression fixtures ==
+SECURITY: ALL PASS
+<end of output>
+Test time =   0.05 sec
+----------------------------------------------------------
+Test Passed.
+"v3_security" end time: Nov 21 04:18 CST
+"v3_security" time elapsed: 00:00:00
+----------------------------------------------------------
+
+5/9 Testing: v3_mt
+5/9 Test: v3_mt
+Command: "/home/real666/feedback/uid536/build-asan/test_v3_mt" "/home/real666/feedback/uid536/tests/v3_test/../.."
+Directory: /home/real666/feedback/uid536/build-asan
+"v3_mt" start time: Nov 21 04:18 CST
+Output:
+----------------------------------------------------------
+MT: ALL PASS
+<end of output>
+Test time =   0.04 sec
+----------------------------------------------------------
+Test Passed.
+"v3_mt" end time: Nov 21 04:18 CST
+"v3_mt" time elapsed: 00:00:00
+----------------------------------------------------------
+
+6/9 Testing: v3_psd
+6/9 Test: v3_psd
+Command: "/home/real666/feedback/uid536/build-asan/test_v3_psd"
+Directory: /home/real666/feedback/uid536/build-asan
+"v3_psd" start time: Nov 21 04:18 CST
+Output:
+----------------------------------------------------------
+test_v3_psd: all tests passed
+<end of output>
+Test time =   0.07 sec
+----------------------------------------------------------
+Test Passed.
+"v3_psd" end time: Nov 21 04:18 CST
+"v3_psd" time elapsed: 00:00:00
+----------------------------------------------------------
+
+7/9 Testing: v3_streamwrite
+7/9 Test: v3_streamwrite
+Command: "/home/real666/feedback/uid536/build-asan/test_v3_streamwrite" "/home/real666/feedback/uid536/tests/v3_test/../.."
+Directory: /home/real666/feedback/uid536/build-asan
+"v3_streamwrite" start time: Nov 21 04:18 CST
+Output:
+----------------------------------------------------------
+== streamwrite tests ==
+STREAMWRITE: ALL PASS
+<end of output>
+Test time =   0.73 sec
+----------------------------------------------------------
+Test Passed.
+"v3_streamwrite" end time: Nov 21 04:18 CST
+"v3_streamwrite" time elapsed: 00:00:00
+----------------------------------------------------------
+
+8/9 Testing: v3_preview
+8/9 Test: v3_preview
+Command: "/home/real666/feedback/uid536/build-asan/test_v3_preview" "/home/real666/feedback/uid536/tests/v3_test/../.."
+Directory: /home/real666/feedback/uid536/build-asan
+"v3_preview" start time: Nov 21 04:18 CST
+Output:
+----------------------------------------------------------
+== linear preview ==
+  all four Bayer phases match reference (odd 5x5 window)
+memory leak check: used=0
+PREVIEW: ALL PASS
+<end of output>
+Test time =   0.29 sec
+----------------------------------------------------------
+Test Passed.
+"v3_preview" end time: Nov 21 04:18 CST
+"v3_preview" time elapsed: 00:00:00
+----------------------------------------------------------
+
+9/9 Testing: lj92
+9/9 Test: lj92
+Command: "/home/real666/feedback/uid536/build-asan/test_lj92"
+Directory: /home/real666/feedback/uid536/build-asan
+"lj92" start time: Nov 21 04:18 CST
+Output:
+----------------------------------------------------------
+LJ92: OK
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"lj92" end time: Nov 21 04:18 CST
+"lj92" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Nov 21 04:18 CST

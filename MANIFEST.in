@@ -6,6 +6,7 @@ include tinydng_io.c
 include tinydng_tiff.c
 include tinydng_dng.c
 include tinydng_codec.c
+include tinydng_preview.c
 include tinydng_write.c
 include tinydng_psd.c
 include tinydng_psd_write.c

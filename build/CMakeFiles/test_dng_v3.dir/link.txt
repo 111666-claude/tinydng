@@ -1,0 +1,1 @@
+/usr/bin/cc -g -Wl,--dependency-file=CMakeFiles/test_dng_v3.dir/link.d CMakeFiles/test_dng_v3.dir/test_v3.c.o -o test_dng_v3  libtinydng.a

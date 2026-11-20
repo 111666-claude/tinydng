@@ -1,0 +1,40 @@
+[  6%] Building C object CMakeFiles/tinydng.dir/tinydng_api.c.o
+[  6%] Building C object CMakeFiles/tinydng.dir/tinydng_io.c.o
+[  9%] Building C object CMakeFiles/tinydng.dir/tinydng_tiff.c.o
+[ 12%] Building C object CMakeFiles/tinydng.dir/tinydng_dng.c.o
+[ 15%] Building C object CMakeFiles/tinydng.dir/tinydng_codec.c.o
+[ 18%] Building C object CMakeFiles/tinydng.dir/tinydng_preview.c.o
+[ 21%] Building C object CMakeFiles/tinydng.dir/tinydng_write.c.o
+[ 24%] Building C object CMakeFiles/tinydng.dir/tinydng_psd.c.o
+[ 27%] Building C object CMakeFiles/tinydng.dir/tinydng_psd_write.c.o
+[ 30%] Linking C static library libtinydng.a
+[ 39%] Built target tinydng
+[ 42%] Building C object CMakeFiles/test_dng_v3.dir/test_v3.c.o
+[ 45%] Building C object CMakeFiles/test_v3_roundtrip.dir/tests/v3_test/test_v3_roundtrip.c.o
+[ 48%] Building C object CMakeFiles/test_v3_metadata.dir/tests/v3_test/test_v3_metadata.c.o
+[ 51%] Building C object CMakeFiles/test_v3_decode.dir/tests/v3_test/test_v3_decode.c.o
+[ 54%] Linking C executable test_dng_v3
+[ 60%] Linking C executable test_v3_roundtrip
+[ 60%] Linking C executable test_v3_metadata
+[ 60%] Built target test_dng_v3
+[ 63%] Building C object CMakeFiles/test_v3_security.dir/tests/v3_test/test_v3_security.c.o
+[ 63%] Built target test_v3_metadata
+[ 63%] Built target test_v3_roundtrip
+[ 69%] Building C object CMakeFiles/test_v3_mt.dir/tests/v3_test/test_v3_mt.c.o
+[ 69%] Building C object CMakeFiles/test_v3_psd.dir/tests/v3_test/test_v3_psd.c.o
+[ 72%] Linking C executable test_v3_decode
+[ 72%] Built target test_v3_decode
+[ 75%] Building C object CMakeFiles/test_v3_streamwrite.dir/tests/v3_test/test_v3_streamwrite.c.o
+[ 78%] Linking C executable test_v3_mt
+[ 81%] Linking C executable test_v3_psd
+[ 84%] Linking C executable test_v3_security
+[ 84%] Built target test_v3_mt
+[ 87%] Building C object CMakeFiles/test_v3_preview.dir/tests/v3_test/test_v3_preview.c.o
+[ 90%] Linking C executable test_v3_streamwrite
+[ 90%] Built target test_v3_psd
+[ 90%] Built target test_v3_security
+[ 93%] Linking C executable test_lj92
+[ 93%] Built target test_v3_streamwrite
+[ 96%] Built target test_lj92
+[100%] Linking C executable test_v3_preview
+[100%] Built target test_v3_preview

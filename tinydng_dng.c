@@ -550,6 +550,7 @@ int td_dng_handle_tag(tinydng_context *ctx, const td_reader *r,
       }
       if (n > 0) {
         img->raw.black_level_present = 1;
+        img->raw.black_level_count = (uint8_t)n;
       }
       break;
     }
@@ -561,6 +562,7 @@ int td_dng_handle_tag(tinydng_context *ctx, const td_reader *r,
       }
       if (n > 0) {
         img->raw.white_level_present = 1;
+        img->raw.white_level_count = (uint8_t)n;
       }
       break;
     }

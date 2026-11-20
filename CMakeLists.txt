@@ -18,6 +18,7 @@ set(TINYDNG_V3_CORE_SRCS
   tinydng_tiff.c
   tinydng_dng.c
   tinydng_codec.c
+  tinydng_preview.c
   tinydng_write.c
   tinydng_psd.c
   tinydng_psd_write.c)
@@ -79,7 +80,7 @@ enable_testing()
 
 set(TINYDNG_V3_TESTS test_v3_roundtrip test_v3_decode test_v3_metadata
                      test_v3_security test_v3_mt test_v3_psd test_v3_streamwrite
-                     test_lj92)
+                     test_v3_preview test_lj92)
 foreach(t ${TINYDNG_V3_TESTS})
   add_executable(${t} tests/v3_test/${t}.c)
   target_link_libraries(${t} PRIVATE tinydng)
@@ -93,4 +94,5 @@ add_test(NAME v3_security COMMAND test_v3_security)
 add_test(NAME v3_mt COMMAND test_v3_mt "${CMAKE_SOURCE_DIR}")
 add_test(NAME v3_psd COMMAND test_v3_psd)
 add_test(NAME v3_streamwrite COMMAND test_v3_streamwrite "${CMAKE_SOURCE_DIR}")
+add_test(NAME v3_preview COMMAND test_v3_preview "${CMAKE_SOURCE_DIR}")
 add_test(NAME lj92 COMMAND test_lj92)

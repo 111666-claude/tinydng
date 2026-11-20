@@ -1,0 +1,1 @@
+/usr/bin/cc -g -fsanitize=address,undefined -Wl,--dependency-file=CMakeFiles/test_v3_roundtrip.dir/link.d CMakeFiles/test_v3_roundtrip.dir/test_v3_roundtrip.c.o -o test_v3_roundtrip  libtinydng_v3.a

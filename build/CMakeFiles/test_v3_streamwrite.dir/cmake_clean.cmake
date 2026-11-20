@@ -1,0 +1,12 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/test_v3_streamwrite.dir/link.d"
+  "CMakeFiles/test_v3_streamwrite.dir/tests/v3_test/test_v3_streamwrite.c.o"
+  "CMakeFiles/test_v3_streamwrite.dir/tests/v3_test/test_v3_streamwrite.c.o.d"
+  "test_v3_streamwrite"
+  "test_v3_streamwrite.pdb"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang C)
+  include(CMakeFiles/test_v3_streamwrite.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

@@ -240,8 +240,10 @@ typedef struct tinydng_vignette_radial {
 typedef struct tinydng_raw_info {
   int32_t black_level[4];
   uint8_t black_level_present;
+  uint8_t black_level_count; /* tag element count (1..4; 0 = absent) */
   int32_t white_level[4];
   uint8_t white_level_present;
+  uint8_t white_level_count; /* tag element count (1..4; 0 = absent) */
   double color_matrix1[9];
   double color_matrix2[9];
   double forward_matrix1[9];
@@ -421,6 +423,71 @@ tinydng_status tinydng_decode_image(tinydng_context *ctx,
                                     const tinydng_decode_options *opts,
                                     tinydng_pixels *out, tinydng_error *err);
 void tinydng_pixels_free(tinydng_context *ctx, tinydng_pixels *px);
+
+/* ------------------------------------------------------------------ */
+/* Linear preview (post-processing on top of the unchanged raw decode) */
+/*                                                                    */
+/* Normalizes raw samples with the DNG BlackLevel/WhiteLevel and the  */
+/* optional LinearizationTable, then emits either a grayscale or a    */
+/* bilinear-demosaiced RGB preview at the FULL raw window size        */
+/* (width/height are preserved; border pixels reuse in-range          */
+/* neighbors). The raw decode path and tinydng_decode_* APIs are not  */
+/* modified by this feature.                                          */
+/* ------------------------------------------------------------------ */
+
+typedef enum tinydng_preview_mode {
+  TINYDNG_PREVIEW_GRAY = 0, /* 1 sample per pixel                       */
+  TINYDNG_PREVIEW_RGB = 1   /* 3 samples per pixel, CFA demosaiced      */
+} tinydng_preview_mode;
+
+typedef enum tinydng_preview_bps {
+  TINYDNG_PREVIEW_8 = 8,   /* uint8 output,  max code 255   */
+  TINYDNG_PREVIEW_16 = 16  /* uint16 output, max code 65535 */
+} tinydng_preview_bps;
+
+typedef struct tinydng_preview_options {
+  /* GRAY or RGB (default GRAY when zeroed). RGB on a CFA image runs a
+     bilinear Bayer demosaic; on a native multi-sample image each channel is
+     normalized independently. */
+  tinydng_preview_mode mode;
+  /* 8 or 16 bits per output sample (default 8 when zeroed). */
+  tinydng_preview_bps output_bps;
+  /* Caller destination buffer. NULL => the library allocates (the returned
+     tinydng_pixels owns the memory; free with tinydng_pixels_free). When
+     non-NULL, dst_capacity must be >= width*height*spp*(out_bps/8). */
+  void *dst;
+  size_t dst_capacity;
+  /* Worker threads for the underlying raw decode (same semantics as
+     tinydng_decode_options.num_threads). 0 = auto. */
+  uint32_t num_threads;
+} tinydng_preview_options;
+
+/* Produce a linear, gamma-free preview of image `image_idx`.
+ *
+ * Normalization per sample s (integer math, fully saturated):
+ *   1. If a LinearizationTable is present, s = table[min(s, count-1)].
+ *   2. b/w are the per-CFA-plane BlackLevel/WhiteLevel (a single level is
+ *      applied to every plane; DNG 2x2 ordering is used when 4 levels exist).
+ *   3. out = clamp(s - b, 0, w - b) * maxcode / (w - b).
+ *
+ * Defined fallbacks / failure results (reported through *err):
+ *   - missing BlackLevel  -> 0; missing WhiteLevel -> 2^bits_per_sample - 1
+ *   - WhiteLevel <= BlackLevel (inverted or degenerate) -> E_INVALID_ARG
+ *   - RGB requested with an unusable CFA (not present on a mono image, bad
+ *     repeat dims, pattern index out of range) -> E_INVALID_ARG; rectangular
+ *     CFALayout 2 -> E_UNSUPPORTED
+ *   - float/signed sample formats, stored depth outside 1..32 bits, or RGB on
+ *     a native >3-sample image -> E_UNSUPPORTED
+ *   - output size overflow / ctx max_image_pixels exceeded -> E_BOUNDS
+ *   - truncated/corrupt payloads surface the underlying decode error
+ * Output is row-major, chunky, host byte order; width/height equal the raw
+ * image window. The grayscale output of a CFA image is the undemosaiced
+ * (mosaic) normalized plane; GRAY on a native RGB image averages channels. */
+tinydng_status tinydng_preview_linear(tinydng_context *ctx,
+                                      const tinydng_document *doc,
+                                      size_t image_idx,
+                                      const tinydng_preview_options *opts,
+                                      tinydng_pixels *out, tinydng_error *err);
 
 /* ------------------------------------------------------------------ */
 /* PSD / PSB (Adobe Photoshop)                                        */
